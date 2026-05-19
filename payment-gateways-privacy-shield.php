@@ -4,7 +4,7 @@
  * Plugin URI:        https://github.com/yourusername/woocommerce-payment-privacy-shield
  * Description:       Hides referrer + shows ONLY Order Number + Amount + Real Customer Name on major gateways. Secure proxy + full webhook verification with retry.
  * Version:           2.9
- * Author:            Your Name
+ * Author:            X1d265Gf
  * License:           GPL-2.0+
  * Text Domain:       wc-payment-privacy-shield
  */
