@@ -66,9 +66,8 @@ Your plugin’s webhook handler will log verification and process events (e.g., 
 	•	Webhook Delays: Sandbox webhooks can be slow — wait or use the test button.
 	•	Mobile Testing: Use Paystack test app or browser dev tools.
 
-✅ Comprehensive Sandbox Testing Guides for All Major Gateways
-Here are detailed, practical testing guides for each payment provider, structured like the Paystack one.
-1. Paystack (Already Covered)
+
+1. Paystack
 	•	Test Mode: Toggle in Dashboard → Use Test Keys
 	•	Test Cards: 4084 0840 8408 4081, 5060 6666 6666 6666 666, etc.
 	•	Privacy Check: Look for “Payment for John Doe” + Order #
