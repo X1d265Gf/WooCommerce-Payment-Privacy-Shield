@@ -2,9 +2,9 @@
 /**
  * Plugin Name:       WooCommerce Payment Privacy Shield
  * Plugin URI:        https://github.com/yourusername/woocommerce-payment-privacy-shield
- * Description:       Hides referrer + shows ONLY Order Number + Amount + Real Customer Name on major gateways. Secure proxy + full webhook verification with retry.
+ * Description:       Hides referrer + shows ONLY Order Number + Amount + Real Customer Name on major gateways. Secure proxy + full webhook verification.
  * Version:           2.9
- * Author:            X1d265Gf
+ * Author:            Your Name
  * License:           GPL-2.0+
  * Text Domain:       wc-payment-privacy-shield
  */
@@ -82,9 +82,11 @@ class WC_Payment_Proxy {
             wp_die( 'Invalid URL.', 400 );
         }
 
+        // Trusted domains whitelist (Mobipaid included)
         $allowed_domains = [
             'payfast.co.za', 'sandbox.payfast.co.za',
             'paystack.com', 'api.paystack.co',
+            'mobipaid.com', 'api.mobipaid.com', 'pay.mobipaid.com',   // Mobipaid Added
             'stripe.com', 'checkout.stripe.com',
             'paypal.com', 'api.paypal.com',
             'yoco.com', 'ozow.com', 'zapper.com',
@@ -120,6 +122,7 @@ class WC_Payment_Proxy {
     }
 }
 
+// Initialize Proxy
 new WC_Payment_Proxy();
 
 /* ==================== MAIN PLUGIN LOGIC ==================== */
@@ -133,7 +136,7 @@ function wc_payment_privacy_shield() {
 
     $logger->info( '=== WooCommerce Payment Privacy Shield v2.9 INITIALIZED ===', $context );
 
-    /* MobiPaid */
+    /* MobiPaid Replacement */
     if ( class_exists( 'Mobipaid' ) ) {
         class Custom_MobiPaid extends Mobipaid {
             public function get_cart_items( $order_id ) {
@@ -183,9 +186,7 @@ function wc_payment_privacy_shield() {
         }, 10, 2 );
     }
 
-    /* Webhooks (simplified - add full versions as needed) */
-
-    /* Referrer Hiding */
+    /* ==================== REFERRER HIDING ==================== */
     add_action( 'send_headers', function() {
         header( 'Referrer-Policy: strict-origin-when-cross-origin' );
     }, 1 );
