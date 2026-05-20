@@ -1,14 +1,11 @@
 # Changelog
 
-All notable changes to **WooCommerce Payment Privacy Shield** will be documented in this file.
-
----
-
 ## [3.0] - 2026-05-20
-
-**Major Release – Production Ready**
-
-### Added
+**Major Zero-Setup Release**
+- Refactored proxy into dedicated `WC_Payment_Proxy` class
+- Added nonce + domain whitelist (including Mobipaid)
+- Stronger default privacy filters
+- Improved structure and logging
 - Full secure proxy class (`WC_Payment_Proxy`) with nonce protection and domain whitelist
 - Mobipaid domains added to proxy whitelist
 - Improved `get_proxy_url()` helper function
