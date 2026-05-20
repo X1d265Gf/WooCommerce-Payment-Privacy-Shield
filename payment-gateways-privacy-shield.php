@@ -21,35 +21,6 @@ function get_shielded_customer( $order ) {
     return $name ?: 'Customer';
 }
 
-function wc_privacy_webhook_retry( $callback, $max_attempts = 3 ) {
-    $attempt = 0;
-    while ( $attempt < $max_attempts ) {
-        try {
-            $attempt++;
-            call_user_func( $callback );
-            return true;
-        } catch ( Exception $e ) {
-            $delay = pow( 2, $attempt ) * 2;
-            wc_get_logger()->warning( "Webhook attempt {$attempt}/{$max_attempts} failed. Retrying in {$delay}s.", array( 'source' => 'wc-payment-privacy-shield' ) );
-            sleep( $delay );
-        }
-    }
-    wc_get_logger()->error( "Webhook failed after {$max_attempts} attempts.", array( 'source' => 'wc-payment-privacy-shield' ) );
-    return false;
-}
-
-function wc_webhook_is_processed( $event_id ) {
-    if ( empty( $event_id ) ) return false;
-    $key = 'webhook_processed_' . md5( $event_id );
-    return (bool) get_transient( $key );
-}
-
-function wc_webhook_mark_processed( $event_id, $expiry = DAY_IN_SECONDS ) {
-    if ( empty( $event_id ) ) return;
-    $key = 'webhook_processed_' . md5( $event_id );
-    set_transient( $key, true, $expiry );
-}
-
 function shield_referrer_proxy( $content ) {
     if ( empty( $content ) ) return $content;
     return preg_replace_callback( '/<a\s+([^>]*?href=["\'])(https?:\/\/[^"\']+)(["\'][^>]*>)/i', function( $m ) {
@@ -63,32 +34,29 @@ function shield_referrer_proxy( $content ) {
 
 class WC_Payment_Proxy {
 
-    private $logger;
-    private $context;
-
     public function __construct() {
-        $this->logger  = wc_get_logger();
-        $this->context = array( 'source' => 'wc-payment-privacy-shield' );
         add_action( 'init', array( $this, 'handle_proxy_request' ) );
     }
 
     public function handle_proxy_request() {
-        if ( strpos( $_SERVER['REQUEST_URI'], '/pay-proxy/' ) !== 0 ) return;
+        if ( strpos( $_SERVER['REQUEST_URI'], '/pay-proxy/' ) !== 0 ) {
+            return;
+        }
 
         if ( empty( $_GET['nonce'] ) || ! wp_verify_nonce( $_GET['nonce'], 'pay_proxy_nonce' ) ) {
-            $this->logger->warning( 'Payment proxy: Invalid nonce', $this->context );
+            error_log( 'Payment proxy: Invalid nonce' );
             wp_die( 'Security check failed.', 403 );
         }
 
         if ( empty( $_GET['url'] ) ) {
-            $this->logger->warning( 'Payment proxy: Missing URL', $this->context );
+            error_log( 'Payment proxy: Missing URL' );
             wp_die( 'Missing URL.', 400 );
         }
 
         $target_url = base64_decode( sanitize_text_field( $_GET['url'] ) );
 
         if ( ! filter_var( $target_url, FILTER_VALIDATE_URL ) ) {
-            $this->logger->warning( 'Payment proxy: Invalid URL', $this->context );
+            error_log( 'Payment proxy: Invalid URL' );
             wp_die( 'Invalid URL.', 400 );
         }
 
@@ -112,11 +80,11 @@ class WC_Payment_Proxy {
         }
 
         if ( ! $allowed ) {
-            $this->logger->warning( "Payment proxy: Blocked untrusted domain - {$host}", $this->context );
+            error_log( "Payment proxy: Blocked untrusted domain - {$host}" );
             wp_die( 'Unauthorized redirect target.', 403 );
         }
 
-        $this->logger->info( "Secure proxy redirect to: {$target_url}", $this->context );
+        error_log( "Secure proxy redirect to: {$target_url}" );
 
         header( 'Referrer-Policy: no-referrer' );
         header( 'Location: ' . $target_url, true, 302 );
@@ -187,7 +155,7 @@ function wc_payment_privacy_shield() {
         }, 10, 2 );
     }
 
-    /* ==================== REFERRER HIDING ==================== */
+    /* Referrer Hiding */
     add_action( 'send_headers', function() {
         header( 'Referrer-Policy: strict-origin-when-cross-origin' );
     }, 1 );
