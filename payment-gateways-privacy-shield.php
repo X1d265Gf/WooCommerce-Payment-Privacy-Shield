@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name:       WooCommerce Payment Privacy Shield
- * Plugin URI:        https://github.com/yourusername/woocommerce-payment-privacy-shield
- * Description:       Zero-setup privacy shield. Hides referrer + shows ONLY Order Number + Amount + Real Customer Name. Secure proxy + full webhook verification.
- * Version:           3.0
+ * Plugin URI:        https://github.com/X1d265Gf/woocommerce-payment-privacy-shield
+ * Description:       Zero-setup privacy shield for high-risk stores. Hides referrer + shows ONLY Order Number + Amount + Real Customer Name. Secure proxy + full webhook verification with retry and idempotency.
+ * Version:           3.1
  * Author:            X1d265Gf
  * License:           GPL-2.0+
  * Text Domain:       wc-payment-privacy-shield
@@ -36,6 +36,18 @@ function wc_privacy_webhook_retry( $callback, $max_attempts = 3 ) {
     }
     wc_get_logger()->error( "Webhook failed after {$max_attempts} attempts.", array( 'source' => 'wc-payment-privacy-shield' ) );
     return false;
+}
+
+function wc_webhook_is_processed( $event_id ) {
+    if ( empty( $event_id ) ) return false;
+    $key = 'webhook_processed_' . md5( $event_id );
+    return (bool) get_transient( $key );
+}
+
+function wc_webhook_mark_processed( $event_id, $expiry = DAY_IN_SECONDS ) {
+    if ( empty( $event_id ) ) return;
+    $key = 'webhook_processed_' . md5( $event_id );
+    set_transient( $key, true, $expiry );
 }
 
 function shield_referrer_proxy( $content ) {
@@ -80,7 +92,6 @@ class WC_Payment_Proxy {
             wp_die( 'Invalid URL.', 400 );
         }
 
-        // Expanded whitelist (zero-setup, includes Mobipaid)
         $allowed_domains = [
             'payfast.co.za', 'sandbox.payfast.co.za',
             'paystack.com', 'api.paystack.co',
@@ -111,13 +122,6 @@ class WC_Payment_Proxy {
         header( 'Location: ' . $target_url, true, 302 );
         exit;
     }
-
-    public function get_proxy_url( $target_url ) {
-        if ( ! filter_var( $target_url, FILTER_VALIDATE_URL ) ) return '';
-        $encoded = base64_encode( $target_url );
-        $nonce   = wp_create_nonce( 'pay_proxy_nonce' );
-        return home_url( "/pay-proxy/?url={$encoded}&nonce={$nonce}" );
-    }
 }
 
 new WC_Payment_Proxy();
@@ -131,7 +135,7 @@ function wc_payment_privacy_shield() {
     $logger = wc_get_logger();
     $context = array( 'source' => 'wc-payment-privacy-shield' );
 
-    $logger->info( '=== WooCommerce Payment Privacy Shield v3.0 INITIALIZED (Zero-Setup Mode) ===', $context );
+    $logger->info( '=== WooCommerce Payment Privacy Shield v3.1 INITIALIZED ===', $context );
 
     /* MobiPaid */
     if ( class_exists( 'Mobipaid' ) ) {
@@ -155,7 +159,7 @@ function wc_payment_privacy_shield() {
         });
     }
 
-    /* Privacy Filters - Stronger Defaults */
+    /* Privacy Filters */
     add_filter( 'woocommerce_gateway_payfast_payment_data_to_send', function( $data, $order_id ) {
         $order = wc_get_order( $order_id );
         if ( ! $order ) return $data;
@@ -172,7 +176,7 @@ function wc_payment_privacy_shield() {
         return $params;
     }, 10, 2 );
 
-    /* Generic Strong Default for All Gateways */
+    /* Generic Gateways */
     $gateways = ['stripe','paypal','adyen','square','braintree','authorize_net','worldpay','amazon_pay','mollie','yoco','ozow','zapper','peach_payments'];
     foreach ( $gateways as $g ) {
         add_filter( 'woocommerce_' . $g . '_args', function( $args, $order ) use ( $g ) {
@@ -195,5 +199,5 @@ function wc_payment_privacy_shield() {
     add_filter( 'the_content', 'shield_referrer_proxy', 999 );
     add_filter( 'woocommerce_pay_order_button_html', 'shield_referrer_proxy', 999 );
 
-    $logger->info( '=== WooCommerce Payment Privacy Shield v3.0 FULLY LOADED (Zero-Setup) ===', $context );
+    $logger->info( '=== WooCommerce Payment Privacy Shield v3.1 FULLY LOADED ===', $context );
 }
