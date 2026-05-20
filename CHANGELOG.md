@@ -4,7 +4,7 @@
 **Final Production Release**
 - Full idempotency keys for all webhooks
 - Refactored retry logic for clarity
-- Secure proxy class with Mobipaid support
+- Secure proxy class for providers
 - Consistent helper functions
 
 ## [3.0] - 2026-05-20
