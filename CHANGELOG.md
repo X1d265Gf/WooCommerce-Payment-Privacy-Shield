@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1] - 2026-05-20
+**Final Production Release**
+- Full idempotency keys for all webhooks
+- Refactored retry logic for clarity
+- Secure proxy class with Mobipaid support
+- Consistent helper functions
+
 ## [3.0] - 2026-05-20
 **Major Zero-Setup Release**
 - Refactored proxy into dedicated `WC_Payment_Proxy` class
