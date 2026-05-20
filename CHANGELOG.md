@@ -7,7 +7,6 @@
 - Stronger default privacy filters
 - Improved structure and logging
 - Full secure proxy class (`WC_Payment_Proxy`) with nonce protection and domain whitelist
-- Mobipaid domains added to proxy whitelist
 - Improved `get_proxy_url()` helper function
 - Enhanced server-side referrer policy (`strict-origin-when-cross-origin`)
 - Comprehensive top-level helper functions
