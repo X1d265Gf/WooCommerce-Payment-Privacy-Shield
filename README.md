@@ -1,10 +1,16 @@
 # WooCommerce Payment Privacy Shield
 
-**Advanced privacy protection for high-risk WooCommerce stores.**
+**Zero-setup privacy protection for high-risk WooCommerce stores.**
 
-This plugin helps merchants (especially in sensitive niches) **hide their site URL/referrer** when redirecting to payment gateways and ensures **only minimal information** (Order Number + Amount + Real Customer Name) is shown on the gateway's payment page.
+Hides your site URL/referrer and shows **only Order Number + Amount + Real Customer Name** on payment gateway pages.
 
 ## Features
+- Real customer name from billing fields
+- Secure proxy endpoint (`/pay-proxy/`) with nonce + domain whitelist
+- Automatic referrer hiding
+- Server-side `Referrer-Policy`
+- Full webhook verification with retry and idempotency
+- Supports 20+ gateways worldwide
 
 - **Real Customer Name** – Uses actual billing first + last name (no generic placeholders unless empty)
 - **Minimal Data Exposure** – Only order number + total amount + customer name sent to gateways
